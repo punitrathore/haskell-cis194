@@ -1,3 +1,5 @@
+module Week1 where
+
 -- Exercise 1
 toDigitsRev :: Integer -> [Integer]
 toDigitsRev n
