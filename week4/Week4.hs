@@ -31,5 +31,14 @@ myFoldl :: (a -> b -> a) -> a -> [b] -> a
 myFoldl f base xs = foldr (flip f) base xs
 
 -- Exercise 4
-cartProd :: [a] -> [b] -> [(a, b)]
-cartProd xs ys = [(x,y) | x <- xs, y <- ys]
+ijPairs n = [(x,y) | x <- [1 .. n], y <- [x .. n]]
+
+numsToFilter n = filter (n>) .
+                 map (\(i,j) -> i + j + 2*i*j)
+
+
+sieveSundaram :: Integer -> [Integer]
+sieveSundaram n = map (\x -> 2*x + 1) $
+                  filter (\x -> not (elem x ntf)) arr
+  where arr = [1 .. (2*n + 2)]
+        ntf = numsToFilter n (ijPairs n)
