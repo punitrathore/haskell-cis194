@@ -1,3 +1,6 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# OPTIONS_GHC -fno-warn-missing-methods #-}
+
 module Fibonacci where
 
 -- Exercise 1
@@ -34,3 +37,33 @@ streamMap f (Stream a s) = (Stream (f a) (streamMap f s))
 streamFromSeed :: (a -> a) -> a -> Stream a
 streamFromSeed f init = let nextVal = f init in
                           (Stream init (streamFromSeed f nextVal))
+
+-- Exericse 5
+nats :: Stream Integer
+nats = streamFromSeed (+1) 0
+
+interleaveStreams :: (Stream a) -> (Stream a) -> (Stream a)
+interleaveStreams (Stream x1 sx) sy = Stream x1 (interleaveStreams sy sx)
+
+startRuler :: Integer -> Stream Integer
+startRuler y = interleaveStreams (streamRepeat y) (startRuler (y + 1))
+
+ruler = startRuler 0
+
+-- Exercise 6
+x :: Stream Integer
+x = Stream 0 (Stream 1 (streamRepeat 0))
+
+
+instance Num (Stream Integer) where
+  fromInteger n = Stream n (streamRepeat 0)
+  negate = streamMap (0-)
+  (+) (Stream s1 sx) (Stream s2 sy) = Stream (s1 + s2) (sx + sy)
+  (*) (Stream x sx) ssy@(Stream y sy) = Stream (x*y) (sy*(fromInteger x) + sx*ssy)
+
+instance Fractional (Stream Integer) where
+  (/) (Stream x sx) (Stream y sy) = q
+    where q = Stream (div x y) (streamMap (`div` y) (sx - q*sy))
+
+fibs3 :: Stream Integer
+fibs3 = x / (1 - x - x^2)
