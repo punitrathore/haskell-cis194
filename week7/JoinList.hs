@@ -1,9 +1,16 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+
 module JoinList where
 
+import Buffer
 import Data.Monoid
-import Sized
 import Debug.Trace
+import Editor
+import Sized
+import Scrabble
+import StringBuffer
 
 data JoinList m a = Empty
                   | Single m a
@@ -64,7 +71,7 @@ b = (Append (Size 2)
 
 c = (Single (Size 1) '!')
 
-d = (+++) b c
+d = (+++) b b
 e = (+++) d c
 
 -- Exercise 3
@@ -80,3 +87,40 @@ dropJ n j@(Append m j1 j2)
   where mb = (getSize . size) m
         b1 = (getSize . size . tag) j1
 dropJ _ _ = Empty
+
+takeJ :: (Sized b, Monoid b) => Int -> JoinList b a -> JoinList b a
+takeJ n Empty = Empty
+takeJ n j@(Single _ _)
+  | n >= 1 = j
+takeJ n j@(Append m j1 j2)
+  | n >= mb = j
+  | n < b1 = takeJ n j1
+  | otherwise = (+++) j1 (takeJ (n - b1) j2)
+  where mb = (getSize . size) m
+        b1 = (getSize . size . tag) j1
+takeJ _ _ = Empty
+
+-- Exercise 3
+
+scoreLine :: String -> JoinList Score String
+scoreLine s = (Single (scoreString s) s)
+
+-- Exercise 4
+
+instance Buffer (JoinList (Score, Size) String) where
+  toString = unlines . jlToList
+
+  fromString = (foldl (\jl line -> jl +++ (makeLine line)) Empty) . lines
+    where makeLine str = Single (scoreString str, 1) str
+
+  line = indexJ
+
+  replaceLine n ln (Single _ _) = fromString ln
+  replaceLine n ln b = (takeJ n  b) +++ newLine +++ dropJ (n + 1) b
+    where newLine = fromString ln
+
+  numLines  = (getSize . size . tag)
+
+  value = (getScore . fst . tag)
+
+main = runEditor editor $ (fromString "hello" :: (JoinList (Score, Size) String))
