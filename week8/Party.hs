@@ -37,7 +37,7 @@ treeFun = treeFold 0 (\e r -> (empFun e) + (foldr (+) 0 r))
 
 maxGuestList :: [GuestList] -> GuestList
 maxGuestList [] = mempty
-maxGuestList (gl:gls) = foldr max gl gls
+maxGuestList gl = maximum gl
 
 nextLevel :: Employee -> [(GuestList, GuestList)] -> (GuestList, GuestList)
 nextLevel boss gls = (withBoss, withoutBoss)
@@ -50,15 +50,14 @@ nextLevel boss gls = (withBoss, withoutBoss)
 maxFun :: Tree Employee -> GuestList
 maxFun tree = uncurry max $ treeFold (mempty, mempty) nextLevel tree
 
--- maxFunReport :: Tree Employee -> String
+maxFunReport :: Tree Employee -> String
 maxFunReport emps = let (GL guestListEmps f) = maxFun emps
-                        names = unwords $ map empName guestListEmps
+                        names = unlines $ map empName guestListEmps
                     in
-                      "Total fun:" ++ (show f) ++ names
+                      "Total fun: " ++ (show f) ++ "\n" ++ names
 
 main :: IO ()
 main = do
   empsString <- readFile "company.txt"
-  let emps::(Tree Employee) = read empsString
-  putStrLn $ maxFunReport emps
-  return ()
+  let emps = read empsString
+  (putStrLn . maxFunReport) emps
