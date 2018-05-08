@@ -113,18 +113,15 @@ g (a, b, c) = [a,b]
 intPair = f <$> posInt <*> char ' ' <*> posInt
   where f = (\a b c -> [a,c])
 
--- abParser_ :: Parser ()
--- abParser_ = Parser f
---   where
---     f "" = Nothing
---     f ('a':'b':xs) = Just((), xs)
---     f (x:xs) = f xs
+-- Exercise 4
 
 instance Alternative Parser where
   empty = Parser (\x -> Nothing)
   p1 <|> p2 = Parser (\s -> case runParser p1 s of
                              Nothing -> runParser p2 s
                              res@(Just _) -> res)
+
+-- Exercise 5
 
 posInt_ = const () <$> posInt
 isUpper_ = const () <$> (satisfy isUpper)
