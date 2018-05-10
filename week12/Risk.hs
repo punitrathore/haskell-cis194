@@ -61,8 +61,10 @@ invade :: Battlefield -> Rand StdGen Battlefield
 invade bf@(Battlefield a d) = do
   if (a < 2 || d == 0)
     then return bf
-    else
-    do
-      bf' <- battle bf
-      invade bf'
+    else battle bf >>= invade
 
+successProb :: Battlefield -> Rand StdGen Double
+successProb bf = replicateM numBattles (invade bf) >>=
+                 (\bfs -> return ((fromIntegral . length . attackWins) bfs / fromIntegral numBattles))
+  where attackWins bfs = filter (\bf -> (defenders bf == 0)) bfs
+        numBattles = 1000
